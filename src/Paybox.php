@@ -1,6 +1,7 @@
 <?php
 
 /*
+ * Test
  * This file is part of the Nexylan packages.
  *
  * (c) Nexylan SAS <contact@nexylan.com>
