@@ -72,6 +72,11 @@ abstract class AbstractResponse implements ResponseInterface
     private $cardType = null;
 
     /**
+     * @var array
+     */
+    private $content = [];
+
+    /**
      * @var mixed[]
      */
     protected $filteredParameters;
@@ -206,5 +211,22 @@ abstract class AbstractResponse implements ResponseInterface
     public function getCardType()
     {
         return $this->cardType;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    final public function getContent()
+    {
+        return $this->content;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    final public function setContent($content)
+    {
+        $this->content = $content;
+        return $this;
     }
 }
