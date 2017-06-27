@@ -128,6 +128,7 @@ abstract class AbstractHttpClient
 
         /** @var ResponseInterface $response */
         $response = new $responseClass($results);
+        $response->setContent($results);
 
         if (!$response->isSuccessful()) {
             throw new PayboxException($response);
