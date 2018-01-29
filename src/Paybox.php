@@ -34,11 +34,17 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
  * @see http://www1.paybox.com/espace-integrateur-documentation/les-solutions-paybox-direct-et-paybox-direct-plus/les-operations-de-caisse-direct-plus/
  * @see http://www1.paybox.com/espace-integrateur-documentation/dictionnaire-des-donnees/paybox-direct-et-direct-plus/
  */
-final class Paybox
+class Paybox
 {
     const API_URL_PRODUCTION = 'https://ppps.paybox.com/PPPS.php';
     const API_URL_RESCUE = 'https://ppps1.paybox.com/PPPS.php';
     const API_URL_TEST = 'https://preprod-ppps.paybox.com/PPPS.php';
+
+    const URL_3DS_PRODUCTION = 'https://tpeweb.paybox.com/cgi/RemoteMPI.cgi';
+    const URL_3DS_RESCUE = 'https://tpeweb1.paybox.com/cgi/RemoteMPI.cgi';
+    const URL_3DS_TEST = 'https://preprod-tpeweb.paybox.com/cgi/RemoteMPI.cgi';
+
+    const INVALID_CREDENTIALS_MESSAGE = 'Paybox SDK: invalid change of credentials';
 
     /**
      * @var ValidatorInterface
@@ -172,5 +178,56 @@ final class Paybox
 
         $resolver->setAllowedValues('paybox_version', Version::getConstants());
         $resolver->setAllowedValues('paybox_default_activity', Activity::getConstants());
+    }
+
+    /**
+     * @param string      $site
+     * @param string      $rank
+     * @param string      $identifier
+     * @param string      $key
+     * @param string|null $version
+     * @return void
+     * @throws \Exception
+     */
+    public function setCredentials($site, $rank, $identifier, $key, $version = null)
+    {
+        if (!isset($site) || !isset($rank) || !isset($identifier) || !isset($key)) {
+            throw new \Exception(self::INVALID_CREDENTIALS_MESSAGE);
+        }
+        $this->options['paybox_site'] = $site;
+        $this->options['paybox_rank'] = $rank;
+        $this->options['paybox_identifier'] = $identifier;
+        $this->options['paybox_key'] = $key;
+        if (isset($version)) {
+            $version = strtoupper($version);
+            $allowedVersions = Version::getConstants();
+            if (!isset($allowedVersions[$version])) {
+                throw new \Exception(self::INVALID_CREDENTIALS_MESSAGE);
+            }
+            $this->options['paybox_version'] = $allowedVersions[$version];
+        }
+
+        $this->httpClient->setOptions($this->options);
+    }
+
+    /**
+     * Get parameters that have been set for passed request object
+     *
+     * @param RequestInterface $request
+     * @return array
+     */
+    public function getParametersSet(RequestInterface $request)
+    {
+        return $this->httpClient->getParameters($request->getRequestType(), $request->getParameters());
+    }
+
+    /**
+     * Get 3DSecure URL for specified environment
+     *
+     * @return string
+     */
+    public function get3dsUrl()
+    {
+        return true === $this->options['production'] ? self::URL_3DS_PRODUCTION : self::URL_3DS_TEST;
     }
 }
